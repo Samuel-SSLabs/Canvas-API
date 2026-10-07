@@ -120,13 +120,18 @@ export async function searchTrackOnline(title, artist) {
 
       const items = gqlResp.data?.data?.searchV2?.tracksV2?.items;
       if (Array.isArray(items) && items.length > 0) {
+        const normExpected = title.toLowerCase().replace(/[^a-z0-9]/g, '');
         for (const it of items) {
           const trackData = it?.item?.data;
-          const uri = trackData?.uri || '';
-          const m = uri.match(/spotify:track:([a-zA-Z0-9]{22})/);
-          if (m) {
-            console.log(`[CANVAS-API] Faixa resolvida via Spotify GraphQL: "${trackData?.name}" (${m[1]})`);
-            return m[1];
+          const trackName = (trackData?.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          // Garante que o título do resultado seja similar ao da faixa que está tocando
+          if (normExpected.length > 2 && (trackName.includes(normExpected) || normExpected.includes(trackName))) {
+            const uri = trackData?.uri || '';
+            const m = uri.match(/spotify:track:([a-zA-Z0-9]{22})/);
+            if (m) {
+              console.log(`[CANVAS-API] Faixa resolvida via Spotify GraphQL com título validado: "${trackData?.name}" (${m[1]})`);
+              return m[1];
+            }
           }
         }
       }
@@ -145,8 +150,12 @@ export async function searchTrackOnline(title, artist) {
 
       const track = resp.data?.tracks?.items?.[0];
       if (track?.id) {
-        console.log(`[CANVAS-API] Faixa resolvida via Spotify Web API: "${track.name}" (${track.id})`);
-        return track.id;
+        const normExpected = title.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const trackName = (track.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (normExpected.length > 2 && (trackName.includes(normExpected) || normExpected.includes(trackName))) {
+          console.log(`[CANVAS-API] Faixa resolvida via Spotify Web API: "${track.name}" (${track.id})`);
+          return track.id;
+        }
       }
     } catch (err) {
       console.error('[CANVAS-API] Erro na busca oficial do Spotify:', err.response?.data || err.message);
