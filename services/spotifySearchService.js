@@ -81,7 +81,16 @@ export async function validateTrackWithTitle(trackId, expectedTitle) {
  * Busca o trackId oficial do Spotify para um título e artista.
  */
 export async function searchTrackOnline(title, artist) {
-  const token = await getClientCredentialsToken();
+  let token = await getClientCredentialsToken();
+  if (!token) {
+    try {
+      const { getToken } = await import('./spotifyAuthService.js');
+      token = await getToken();
+    } catch (e) {
+      console.error('[CANVAS-API] Erro ao obter token do SP_DC para busca:', e?.message);
+    }
+  }
+
   if (token) {
     try {
       const q = `track:${title} artist:${artist}`.trim();
