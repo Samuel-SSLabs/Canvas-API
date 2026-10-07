@@ -126,7 +126,7 @@ export async function getToken(reason = "init", productType = "mobile-web-player
       'User-Agent': userAgent(),
       'Origin': 'https://open.spotify.com/',
       'Referer': 'https://open.spotify.com/',
-      'Cookie': `sp_dc=${SP_DC}`,
+      'Cookie': `sp_dc=${process.env.SP_DC || SP_DC}`,
     },
   });
 

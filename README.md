@@ -1,114 +1,67 @@
-# Spotify Canvas API
+# Spotify Canvas API (Serverless)
 
-Unofficial API to fetch Spotify **Canvas video data** (the looping visual videos that appear behind songs on mobile).  
-
-> [!WARNING]  
-> This project uses undocumented endpoints and may violate [Spotify's Terms of Service](https://www.spotify.com/legal/end-user-agreement/). Use at your own risk.
+Microserviço serverless de alta performance para consulta e recuperação dos vídeos em loop (**Canvas**) de faixas do Spotify, integrado ao ecossistema **Setup Deck**.
 
 ---
 
-## Features
+## 🚀 Como fazer o Deploy na Vercel (Passo a Passo)
 
-- Retrieve **Canvas video URLs** by track ID or URI
-- Parses Protobuf responses from the internal Spotify API
-- Works with public or private tracks (as long as you're authenticated)
+### 1. Criar Repositório no GitHub
+Suba os arquivos desta pasta para o seu repositório:
+👉 [https://github.com/Samuel-SSLabs/CanvasAPI](https://github.com/Samuel-SSLabs/CanvasAPI)
+
+> **Nota:** Certifique-se de que o `.gitignore` está ignorando `node_modules` e `.env`. A Vercel cuida de instalar tudo na nuvem.
+
+### 2. Importar o Projeto na Vercel
+1. Acesse [vercel.com](https://vercel.com) e entre com sua conta do GitHub.
+2. Clique em **Add New... > Project**.
+3. Selecione o repositório **Samuel-SSLabs/CanvasAPI**.
+4. Em **Framework Preset**, deixe como `Other`.
+
+### 3. Configurar a Variável de Ambiente (`SP_DC`)
+1. Antes de clicar em Deploy, expanda a seção **Environment Variables**.
+2. Adicione a variável:
+   - **Key (Nome):** `SP_DC`
+   - **Value (Valor):** `[Cole o cookie sp_dc da sua conta do Spotify]`
+3. Clique em **Deploy**.
+
+> 💡 **Como pegar o `sp_dc`:**
+> Acesse [open.spotify.com](https://open.spotify.com) no navegador, abra o DevTools (**F12**) > aba **Aplicativo (Application)** > **Cookies** > selecione `https://open.spotify.com` > copie o valor do cookie chamado **`sp_dc`**.
 
 ---
 
-## Example Request
+## 📡 Endpoints Disponíveis
 
-### GET `/api/canvas`
-
-```bash
-https://localhost:3000/api/canvas?trackId=3OHfY25tqY28d16oZczHc8
+### 1. Consultar Vídeo Canvas
+```http
+GET /api/canvas?trackId={trackId}&title={titulo}&artist={artista}
 ```
 
-### Response:
+**Exemplo de Resposta (200 OK):**
 ```json
 {
-  "data": {
-    "canvasesList": [
-      {
-        "id": "32b57cbf354b453a95eee32bb04d4e42",
-        "canvasUrl": "https://canvaz.scdn.co/upload/licensor/5bSw7fRotCnRCcO9br14W5/video/32b57cbf354b453a95eee32bb04d4e42.cnvs.mp4",
-        "trackUri": "spotify:track:3OHfY25tqY28d16oZczHc8",
-        "artist": {
-          "artistUri": "spotify:artist:7tYKF4w9nC0nq9CsPZTHyP",
-          "artistName": "SZA",
-          "artistImgUrl": "https://i.scdn.co/image/ab6761610000f1780895066d172e1f51f520bc65"
-        },
-        "otherId": "2c441fceb502eaa25f26bcd5b1ccfc0d",
-        "canvasUri": "spotify:canvas:1xGyujDyxbx4eTPD4nKLw6"
-      }
-    ]
-  }
+  "canvasesList": [
+    {
+      "id": "32b57cbf354b453a95eee32bb04d4e42",
+      "canvasUrl": "https://canvaz.scdn.co/upload/licensor/5bSw7fRotCnRCcO9br14W5/video/32b57cbf354b453a95eee32bb04d4e42.cnvs.mp4",
+      "trackUri": "spotify:track:3OHfY25tqY28d16oZczHc8"
+    }
+  ],
+  "trackId": "3OHfY25tqY28d16oZczHc8"
 }
 ```
 
----
-
-## Setup
-
-### 1. Clone the Repo
-
-```bash
-git clone https://github.com/Paxsenix0/Spotify-Canvas-API.git
-cd Spotify-Canvas-API
+### 2. Status do Serviço
+```http
+GET /health
 ```
-
-### 2. Install Dependencies
-
-```bash
-npm install
-```
-
-### 3. Set Required Environment Variable
-
-You must supply your sp_dc cookie from a logged-in Spotify session.
-
-Create a .env file in the root:
-
-```bash
-SP_DC=your_sp_dc_cookie_here
-```
-
-> This cookie is used to generate an access token to authenticate requests.
+Retorna `{ "status": "ok", "service": "Spotify-Canvas-API", "env": "vercel" }`.
 
 ---
 
-## Deployment
+## ⚡ Recursos e Otimizações
 
-You can deploy instantly with Vercel:
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FPaxsenix0%2FSpotify-Canvas-API%2Ftree%2Fmain&project-name=Spotify-Canvas-API&repository-name=Spotify-Canvas-API&env=SP_DC&envDescription=SP_DC%20is%20needed%20for%20this%20for%20authentication%20to%20be%20working%20fine&envLink=https%3A%2F%2Fwww.spotify.com%2F&redirect-url=https%3A%2F%2Fgithub.com%2FPaxsenix0%2FSpotify-Canvas-API)
-
----
-
-## Notes
-
-> I'm developing this project entirely on my phone, without a PC or laptop. Also, I'm still learning — so feel free to send pull requests or suggestions if something looks off!
-
----
-
-## Reference
-
-Shoutout to this helpful repo that inspired parts of this:
-https://github.com/bartleyg/my-spotify-canvas
-
----
-
-## License
-
-This project is licensed under the MIT license. see [LICENSE](https://github.com/Paxsenix0/Spotify-Canvas-API/blob/initial/LICENSE) for details.
-
----
-
-## Contact
-
-Telegram: [@paxsenix0](https://t.me/paxsenix0)
-
-Email: alex24dzn@proton.me
-
-My Rest-API website: https://api.paxsenix.biz.id
-
+- **Edge CDN Caching:** Respostas de faixas já consultadas são cacheadas na borda da Vercel (`Cache-Control: s-maxage=86400`), respondendo em ~15ms sem reconsultar o Spotify.
+- **Zero Configuração no Desktop:** Usuários do Setup Deck não precisam instalar dependências ou informar cookies de sessão.
+- **Tolerância a Falhas:** Retornos vazios (`canvasesList: []`) permitem fallback suave para capas de álbum estáticas no display.
 ---
