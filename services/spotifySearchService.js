@@ -92,6 +92,49 @@ export async function searchTrackOnline(title, artist) {
   }
 
   if (token) {
+    // 1. Tenta busca via GraphQL interno do Spotify (Pathfinder - mesmo do Web Player e clients oficiais)
+    try {
+      const vars = {
+        searchTerm: `${title} ${artist}`.trim(),
+        offset: 0,
+        limit: 5,
+        numberOfTopResults: 5,
+        includeAudiobooks: false
+      };
+      const exts = {
+        persistedQuery: {
+          version: 1,
+          sha256Hash: "1d021289df50166c61630e02f002ec91182b518e56bcd681ac6b0640390c0245"
+        }
+      };
+      const gqlUrl = `https://api-partner.spotify.com/pathfinder/v1/query?operationName=searchTracks&variables=${encodeURIComponent(JSON.stringify(vars))}&extensions=${encodeURIComponent(JSON.stringify(exts))}`;
+      const gqlResp = await axios.get(gqlUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
+          'Origin': 'https://open.spotify.com',
+          'Referer': 'https://open.spotify.com/'
+        },
+        timeout: 5000
+      });
+
+      const items = gqlResp.data?.data?.searchV2?.tracksV2?.items;
+      if (Array.isArray(items) && items.length > 0) {
+        for (const it of items) {
+          const trackData = it?.item?.data;
+          const uri = trackData?.uri || '';
+          const m = uri.match(/spotify:track:([a-zA-Z0-9]{22})/);
+          if (m) {
+            console.log(`[CANVAS-API] Faixa resolvida via Spotify GraphQL: "${trackData?.name}" (${m[1]})`);
+            return m[1];
+          }
+        }
+      }
+    } catch (errGql) {
+      console.warn('[CANVAS-API] Falha no GraphQL Pathfinder, tentando Web API padrão:', errGql?.message);
+    }
+
+    // 2. Fallback via Web API padrão
     try {
       const q = `track:${title} artist:${artist}`.trim();
       const resp = await axios.get('https://api.spotify.com/v1/search', {

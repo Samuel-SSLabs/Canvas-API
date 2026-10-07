@@ -13,22 +13,19 @@ export const fetchCanvas = async (req, res) => {
   if (trackId && title) {
     const val = await validateTrackWithTitle(trackId, title);
     if (!val.valid) {
-      console.log(`[CANVAS-API] Aviso: Track ID local "${trackId}" pertence a "${val.actualTitle}", mas a faixa tocando é "${title}".`);
-      const novoId = await searchTrackOnline(title, artist);
-      if (novoId) {
-        trackId = novoId;
-      } else {
-        console.log(`[CANVAS-API] Track ID local descartado (pertence a "${val.actualTitle}"). Sem busca alternativa.`);
-        return res.status(200).json({ canvasesList: [], trackId: null, message: 'Faixa sem Canvas correspondente.' });
-      }
+      console.log(`[CANVAS-API] Aviso: Track ID "${trackId}" pertence a "${val.actualTitle}", mas a faixa tocando é "${title}". Descartando ID inválido.`);
+      trackId = null;
     }
-  } else if (!trackId && title && artist) {
+  }
+
+  // Se não temos trackId válido (ou se o ID local foi descartado), busca online por título e artista
+  if (!trackId && title && artist) {
     const buscadoId = await searchTrackOnline(title, artist);
     if (buscadoId) {
       trackId = buscadoId;
     } else {
-      console.log(`[CANVAS-API] Track ID ausente e busca online indisponível para "${title}" - "${artist}".`);
-      return res.status(200).json({ canvasesList: [], trackId: null, message: 'Track ID ausente.' });
+      console.log(`[CANVAS-API] Track ID ausente e busca indisponível para "${title}" - "${artist}".`);
+      return res.status(200).json({ canvasesList: [], trackId: null, message: 'Faixa sem Canvas correspondente.' });
     }
   }
 
